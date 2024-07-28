@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:tv/app/data/repositories_implementation/authentication_repository_imp.dart';
 import 'package:tv/app/data/repositories_implementation/connectivity_repository_imp.dart';
+import 'package:tv/app/data/services/remote/internet_checkear.dart';
 import 'package:tv/app/domain/repositories/authentication_repository.dart';
 import 'package:tv/app/domain/repositories/connectivity_reporsitory.dart';
 import 'package:tv/app/my_app.dart';
@@ -10,7 +12,10 @@ void main() {
   runApp(
     Injector(
       authenticationRepository: AuthenticationRepositoryImp(),
-      connectivityRepository: ConnectivityRepositoryImp(),
+      connectivityRepository: ConnectivityRepositoryImp(
+        Connectivity(),
+        InternetCheckear(),
+      ),
       child: MyApp(),
     ),
   );

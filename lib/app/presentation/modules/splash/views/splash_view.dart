@@ -38,7 +38,9 @@ class _SplashViewState extends State<SplashView> {
       } else if (mounted) {
         Navigator.pushReplacementNamed(context, Routes.signIn);
       }
-    } else {}
+    } else {
+      Navigator.pushReplacementNamed(context, Routes.ofLine);
+    }
   }
 
   void _goTo(String routeName) {
