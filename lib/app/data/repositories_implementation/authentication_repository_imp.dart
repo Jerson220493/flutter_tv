@@ -3,7 +3,7 @@ import 'package:tv/app/domain/repositories/authentication_repository.dart';
 
 class AuthenticationRepositoryImp implements AuthenticationRepository {
   @override
-  Future<User> getUserData() {
+  Future<User?> getUserData() {
     return Future.value(User());
   }
 
