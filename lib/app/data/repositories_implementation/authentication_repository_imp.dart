@@ -1,14 +1,22 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:tv/app/domain/models/user.dart';
 import 'package:tv/app/domain/repositories/authentication_repository.dart';
 
+const _key = "sessionId";
+
 class AuthenticationRepositoryImp implements AuthenticationRepository {
+  final FlutterSecureStorage _secureStorage;
+
+  AuthenticationRepositoryImp(this._secureStorage);
+
   @override
   Future<User?> getUserData() {
     return Future.value(User());
   }
 
   @override
-  Future<bool> get isSignedIn {
-    return Future.value(true);
+  Future<bool> get isSignedIn async {
+    final sessionId = await _secureStorage.read(key: _key);
+    return sessionId != null;
   }
 }

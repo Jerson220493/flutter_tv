@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:tv/app/data/services/remote/internet_checkear.dart';
 import 'package:tv/app/domain/repositories/connectivity_reporsitory.dart';
