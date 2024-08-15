@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:tv/app/data/services/remote/authentication_api.dart';
 import 'package:tv/app/domain/either.dart';
 import 'package:tv/app/domain/enums.dart';
 import 'package:tv/app/domain/models/user.dart';
@@ -8,8 +9,9 @@ const _key = "sessionId";
 
 class AuthenticationRepositoryImp implements AuthenticationRepository {
   final FlutterSecureStorage _secureStorage;
+  final AuthenticationAPI _authenticationAPI;
 
-  AuthenticationRepositoryImp(this._secureStorage);
+  AuthenticationRepositoryImp(this._secureStorage, this._authenticationAPI);
 
   @override
   Future<User?> getUserData() {
@@ -27,19 +29,37 @@ class AuthenticationRepositoryImp implements AuthenticationRepository {
     String username,
     String password,
   ) async {
-    await Future.delayed(
-      Duration(seconds: 2),
-    );
-    if (username != 'test') {
-      return Either.left(signInFailure.notFound);
-    }
-    if (password != '123456') {
-      return Either.left(signInFailure.unauthorized);
-    }
+    final requestTokenResult = await _authenticationAPI.createRequestToken();
+    return requestTokenResult.when(
+      (failure) => Either.left(failure),
+      (requestToken) async {
+        final loginResult = await _authenticationAPI.createSessionwithLogin(
+          username: username,
+          password: password,
+          requestToken: requestToken,
+        );
 
-    await _secureStorage.write(key: _key, value: '123');
-    return Either.right(
-      User(),
+        return loginResult.when(
+          (failure) async {
+            return Either.left(failure);
+          },
+          (newRequestToken) async {
+            final sessionResult =
+                await _authenticationAPI.createSession(newRequestToken);
+
+            return sessionResult.when(
+              (failure) async => Either.left(failure),
+              (sessionId) async {
+                await _secureStorage.write(
+                  key: _key,
+                  value: sessionId,
+                );
+                return Either.right(User());
+              },
+            );
+          },
+        );
+      },
     );
   }
 
