@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:http/http.dart';
 import 'package:tv/app/domain/either.dart';
@@ -26,6 +27,7 @@ class Http {
     Map<String, dynamic> body = const {},
     bool useApiKey = true,
   }) async {
+    Map<String, dynamic> logs = {};
     try {
       if (useApiKey) {
         queryParams = {...queryParams, 'api_key': _apiKey};
@@ -41,6 +43,13 @@ class Http {
 
       late final Response response;
       final bodyString = jsonEncode(body);
+      // guardar el log
+      logs = {
+        'url': url.toString(),
+        'method': method.name,
+        'body': body,
+      };
+
       switch (method) {
         case HttpMethod.get:
           response = await _client.get(url);
@@ -75,6 +84,11 @@ class Http {
           break;
       }
       final statusCode = response.statusCode;
+      logs = {
+        ...logs,
+        'statusCode': statusCode,
+        'respondeBody': response.body,
+      };
       if (statusCode >= 200 && statusCode < 300) {
         // si no entra aca es porque hubo un error en el proceso
         return Either.right(onSuccess(response.body));
@@ -84,8 +98,14 @@ class Http {
           statusCode: statusCode,
         ),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      logs = {
+        ...logs,
+        'exception': e.runtimeType,
+        'stackTrace': stackTrace.toString(),
+      };
       if (e is SocketException || e is ClientException) {
+        logs = {...logs, 'exception': 'NetworkExeption'};
         return Either.left(
           HttpFailure(
             exception: NetworkException(),
@@ -95,6 +115,8 @@ class Http {
       return Either.left(
         HttpFailure(exception: e),
       );
+    } finally {
+      print(logs);
     }
   }
 }

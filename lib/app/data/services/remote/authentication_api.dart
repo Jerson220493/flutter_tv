@@ -28,15 +28,18 @@ class AuthenticationAPI {
   }
 
   Future<Either<signInFailure, String>> createRequestToken() async {
-    final result = await _http.request(
-      '/authentication/token/new',
-    );
+    final result = await _http.request('/authentication/token/new',
+        onSuccess: (responseBody) {
+      final json = Map<String, dynamic>.from(
+        jsonDecode(responseBody),
+      );
+      return json['request_token'] as String;
+    });
     return result.when(
       _hangleFailure,
-      (responseBody) {
-        final json = Map<String, dynamic>.from(jsonDecode(responseBody));
-        return Either.right(json['request_token'] as String);
-      },
+      (requestToken) => Either.right(
+        requestToken,
+      ),
     );
   }
 
@@ -53,17 +56,18 @@ class AuthenticationAPI {
         'password': password,
         'request_token': requestToken,
       },
-    );
-    return result.when(
-      _hangleFailure,
-      (responseBody) {
+      onSuccess: (responseBody) {
         final json = Map<String, dynamic>.from(
           jsonDecode(responseBody),
         );
-
-        final newRequestToken = json['request_token'] as String;
-        return Either.right(newRequestToken);
+        return json['request_token'] as String;
       },
+    );
+    return result.when(
+      _hangleFailure,
+      (newRequestToken) => Either.right(
+        newRequestToken,
+      ),
     );
   }
 
@@ -74,17 +78,17 @@ class AuthenticationAPI {
       '/authentication/session/new',
       method: HttpMethod.post,
       body: {'request_token': request_token},
+      onSuccess: (responseBody) {
+        final json = Map<String, dynamic>.from(
+          jsonDecode(responseBody),
+        );
+        return json['session_id'] as String;
+      },
     );
 
     return result.when(
       _hangleFailure,
-      (responseBody) {
-        final json = Map<String, dynamic>.from(
-          jsonDecode(responseBody),
-        );
-        final sessionId = json['session_id'] as String;
-        return Either.right(sessionId);
-      },
+      (sessionId) => Either.right(sessionId),
     );
   }
 }
