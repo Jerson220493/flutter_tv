@@ -5,6 +5,11 @@ import 'dart:math';
 import 'package:http/http.dart';
 import 'package:tv/app/domain/either.dart';
 
+part 'failure.dart';
+part 'parse_response_body.dart';
+
+enum HttpMethod { get, post, patch, delete, put }
+
 class Http {
   final Client _client;
   final String _baseUrl;
@@ -20,7 +25,7 @@ class Http {
 
   Future<Either<HttpFailure, R>> request<R>(
     String path, {
-    required R Function(String responseBody) onSuccess,
+    required R Function(dynamic responseBody) onSuccess,
     HttpMethod method = HttpMethod.get,
     Map<String, String> headers = const {},
     Map<String, String> queryParams = const {},
@@ -83,15 +88,22 @@ class Http {
           );
           break;
       }
+
       final statusCode = response.statusCode;
+      final responseBody = _parseResponseBody(response.body);
       logs = {
         ...logs,
         'statusCode': statusCode,
         'respondeBody': response.body,
+        'reponseBody': responseBody,
       };
       if (statusCode >= 200 && statusCode < 300) {
         // si no entra aca es porque hubo un error en el proceso
-        return Either.right(onSuccess(response.body));
+        return Either.right(
+          onSuccess(
+            responseBody,
+          ),
+        );
       }
       return Either.left(
         HttpFailure(
@@ -120,17 +132,3 @@ class Http {
     }
   }
 }
-
-class HttpFailure {
-  final int? statusCode;
-  final Object? exception;
-
-  HttpFailure({
-    this.statusCode,
-    this.exception,
-  });
-}
-
-class NetworkException {}
-
-enum HttpMethod { get, post, patch, delete, put }

@@ -30,9 +30,7 @@ class AuthenticationAPI {
   Future<Either<signInFailure, String>> createRequestToken() async {
     final result = await _http.request('/authentication/token/new',
         onSuccess: (responseBody) {
-      final json = Map<String, dynamic>.from(
-        jsonDecode(responseBody),
-      );
+      final json = responseBody as Map;
       return json['request_token'] as String;
     });
     return result.when(
@@ -57,9 +55,7 @@ class AuthenticationAPI {
         'request_token': requestToken,
       },
       onSuccess: (responseBody) {
-        final json = Map<String, dynamic>.from(
-          jsonDecode(responseBody),
-        );
+        final json = responseBody as Map;
         return json['request_token'] as String;
       },
     );
@@ -79,9 +75,7 @@ class AuthenticationAPI {
       method: HttpMethod.post,
       body: {'request_token': request_token},
       onSuccess: (responseBody) {
-        final json = Map<String, dynamic>.from(
-          jsonDecode(responseBody),
-        );
+        final json = responseBody as Map;
         return json['session_id'] as String;
       },
     );

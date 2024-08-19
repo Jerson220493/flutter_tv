@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:tv/app/domain/enums.dart';
+import 'package:tv/app/domain/repositories/authentication_repository.dart';
 import 'package:tv/main.dart';
 
 import '../../../routes/routes.dart';
@@ -98,9 +100,10 @@ class _SignInViewState extends State<SignInView> {
     setState(() {
       _fetching = true;
     });
-    final result = await Injector.of(context)
-        .authenticationRepository
-        .signIn(_username, _password);
+    final result = await context.read<AuthenticationRepository>().signIn(
+          _username,
+          _password,
+        );
 
     if (!mounted) {
       return;
